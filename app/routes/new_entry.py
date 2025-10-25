@@ -3,7 +3,8 @@ import json
 import os
 import subprocess
 import uuid
-from qdrant_client import QdrantClient, models
+import chromadb
+from chromadb.utils import embedding_functions
 from flask import Blueprint, render_template, request, jsonify
 from sentence_transformers import SentenceTransformer
 from app.services import transcription as T
@@ -15,88 +16,86 @@ NOTES_DIR = 'app/static/notes'
 bp = Blueprint('new_entry', __name__, url_prefix='/new_entry')
 
 collection_name = "journal_notes"
-client = QdrantClient("http://localhost:6334")
+client = chromadb.PersistentClient(path="chroma_data")
+
+
 encoder = SentenceTransformer("BAAI/bge-base-en-v1.5")
 
-def query_collection(query, collection_name="journal_notes"):
-    """
-    Perform a semantic search on the saved notes based on the query.
-    """
-    hits = client.query_points(
-        collection_name=collection_name,
-        query=encoder.encode(query).tolist(),
-        limit=5,
-    ).points
+def query_collection(query, collection_name="journal_notes", top_k=5):
+    # embed query
+    query_embedding = encoder.encode(query).tolist()
 
-    matching_ids = [hit.id for hit in hits]
+    # get or create the collection
+    collection = client.get_or_create_collection(
+        name=collection_name,
+        # we are using external embedder so we can pass embedding_function=None
+    )
+
+    # perform query
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=top_k,
+        include=["ids", "documents", "metadatas"]
+    )
+
+    matching_ids = results["ids"][0]
+    # optionally you can get documents or metadatas:
+    # matching_docs = results["documents"][0]
     matching_notes = load_note_ids(matching_ids)
 
     return matching_notes
 
 
-def add_to_vectordb(note_id, summary, collection_name="journal_notes"):
-    if not client.collection_exists(collection_name):
-        client.create_collection(
-            collection_name=collection_name,
-            vectors_config=models.VectorParams(
-                size=encoder.get_sentence_embedding_dimension(),
-                distance=models.Distance.COSINE,
-            ),
-        )
+def add_to_vectordb(note_id, summary, collection_name="journal_notes", tags=None):
+    # get or create the collection. If you want to use your own embeddings, pass embedding_function=None
+    collection = client.get_or_create_collection(
+        name=collection_name,
+        # embedding_function=None # because you compute embeddings externally
+    )
 
     embedding = encoder.encode([summary])[0].tolist()
-    client.upsert(
-        collection_name=collection_name,
-        points=[
-            models.PointStruct(
-                id=note_id,
-                vector=embedding,
-            )
-        ],
+
+    collection.add(
+        ids=[note_id],
+        embeddings=[embedding],
+        metadatas=[{"tags": tags}] if tags is not None else [{}],
+        documents=[summary]
     )
+
+import uuid
 
 def store_collection(data, collection_name="journal_notes"):
-    """
-    Store notes in the vector database.
-    """
-    if client.collection_exists(collection_name):
-        client.delete_collection(collection_name)
+    # If existing collection and you want to start fresh, you can delete:
+    try:
+        client.delete_collection(name=collection_name)
+    except ValueError:
+        pass
 
-    client.create_collection(
-        collection_name=collection_name,
-        vectors_config=models.VectorParams(
-            size=encoder.get_sentence_embedding_dimension(),
-            distance=models.Distance.COSINE,
-        ),
+    collection = client.create_collection(
+        name=collection_name,
+        # embedding_function=None # we compute embeddings outside
     )
 
+    ids = []
+    embeddings = []
+    metadatas = []
     documents = []
+
     for item in data:
         title, formatted_text, tags = get_title_summary_tags_from_transcription(item)
         note_id = str(uuid.uuid4())
 
-        documents.append(
-            {
-                "id": note_id,
-                "title": title,
-                "summary": formatted_text,
-                "tags": tags,
-            }
-        )
+        ids.append(note_id)
+        embeddings.append(encoder.encode([formatted_text])[0].tolist())
+        documents.append(formatted_text)
+        metadatas.append({"title": title, "tags": tags})
 
-    client.upsert(
-        collection_name=collection_name,
-        points=[
-            models.PointStruct(
-                id=doc["id"],
-                vector=encoder.encode([doc["summary"]])[0].tolist()
-            )
-            for doc in documents
-        ],
+    collection.add(
+        ids=ids,
+        embeddings=embeddings,
+        metadatas=metadatas,
+        documents=documents
     )
-
-
-
 
 @bp.route('/', methods=['GET'])
 def new_entry():

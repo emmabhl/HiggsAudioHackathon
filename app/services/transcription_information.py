@@ -2,16 +2,6 @@ import ollama
 import numpy as np
 import re
 from app.services.promptLibrary import promptDict
-import uuid
-from qdrant_client import QdrantClient, models
-import logging
-import os
-from sentence_transformers import SentenceTransformer
-
-# Initialize Qdrant client and SentenceTransformer
-collection_name = "journal_notes"
-client = QdrantClient("http://localhost:6334")
-encoder = SentenceTransformer("BAAI/bge-base-en-v1.5")
 
 all_tags = ['Maths', 'Science', 'History', 'Art', 'Literature']
 
