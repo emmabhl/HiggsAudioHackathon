@@ -28,11 +28,14 @@ function startRecording() {
                         <div class="loading-spinner"></div>
                         <p class="recording-text">Processing your question...</p>
                     `;
-                    
+                    console.log(formData)
                     // Send to API endpoint
-                    const response = await fetch('/api/ask_question', {
+                    const response = await fetch('/live_chat/response', {
                         method: 'POST',
-                        body: formData
+                        headers: {
+                            "Content-Type": "audio/wav"
+                        },
+                        data: formData
                     });
                     
                     if (!response.ok) {

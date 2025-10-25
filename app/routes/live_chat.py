@@ -16,14 +16,14 @@ def response():
 
     # Read raw blob -> WAV bytes
     incoming = request.get_data(cache=False)
-    if not incoming:
-        abort(400, description="Empty audio payload.")
-    wav_bytes = _to_wav_bytes(incoming)
+    # if not incoming:
+    #     abort(400, description="Empty audio payload.")
+    # wav_bytes = _to_wav_bytes(incoming)
 
-    # In-memory file-like for transcriber
-    wav_io = io.BytesIO(wav_bytes)
-    wav_io.name = "input.wav"
-    query = T.process_audio("input.wav")
+    # # In-memory file-like for transcriber
+    # wav_io = io.BytesIO(wav_bytes)
+    # wav_io.name = "input.wav"
+    query = T.process_audio(incoming)
     matching_notes = semantic_search_notes(query)
 
     if len(query) == 0:
