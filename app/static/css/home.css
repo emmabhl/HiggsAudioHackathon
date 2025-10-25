@@ -143,3 +143,126 @@ a, p, h1, h2, h3, h4, h5, h6, .card-title, .card-text {
 .section-stats {
     margin-top: 50px;
 }
+
+/* Recording UI styles */
+#recording-ui {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+}
+
+.recording-animation {
+    position: relative;
+    display: inline-block;
+}
+
+.recording-pulse {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: rgba(200, 255, 200, 0.2);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translate(-50%, -50%) scale(0.95);
+        opacity: 0.5;
+    }
+    70% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0.95);
+        opacity: 0;
+    }
+}
+
+.recording-text {
+    margin: 1rem 0;
+    font-size: 1.2rem;
+}
+
+.stop-recording-btn {
+    background-color: #ffa0a2;
+    border: none;
+    border-radius: 50px;
+    padding: 0.8rem 2rem;
+    color: white;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.stop-recording-btn:hover {
+    background-color: #ff8a8c;
+}
+
+.stop-icon {
+    width: 12px;
+    height: 12px;
+    background-color: white;
+    display: inline-block;
+    border-radius: 2px;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #c8ffc8;
+    border-top: 4px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Answer container */
+.answer-container {
+    width: 100%;
+    text-align: left;
+    padding: 1rem;
+}
+
+.answer-container h6 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.question-text, .answer-text {
+    margin-bottom: 1rem;
+    white-space: pre-wrap;
+}
+
+.ask-another-btn, .try-again-btn {
+    background-color: #c8ffc8;
+    border: none;
+    border-radius: 50px;
+    padding: 0.8rem 2rem;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.ask-another-btn:hover, .try-again-btn:hover {
+    background-color: #b4ffb4;
+}
+
+.error-message {
+    color: #ffa0a2;
+    text-align: center;
+}

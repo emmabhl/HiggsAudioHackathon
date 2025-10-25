@@ -25,7 +25,7 @@ function lerpColor(a, b, t) {
 }
 
 function animateGradient() {
-  t += 0.002;
+  t += 0.003;
   if (t >= 1) {
     t = 0;
     currentA = targetA;

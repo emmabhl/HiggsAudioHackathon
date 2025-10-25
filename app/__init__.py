@@ -1,5 +1,5 @@
 from flask import Flask
-from .routes import new_entry, note_gallery, view_entry, edit_entry, home
+from .routes import new_entry, note_gallery, view_entry, edit_entry, home, question
 
 
 def create_app():
@@ -11,6 +11,7 @@ def create_app():
     app.register_blueprint(view_entry.bp)
     app.register_blueprint(edit_entry.bp)
     app.register_blueprint(home.bp)
+    app.register_blueprint(question.question_bp)
 
     # Configure secret key for session management
     app.config['SECRET_KEY'] = 'blob'
