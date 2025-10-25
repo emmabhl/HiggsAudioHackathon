@@ -1,17 +1,29 @@
 import chromadb
 import numpy as np
 import librosa  # or torchaudio
-from higgs_audio.boson_multimodal.audio_processing.higgs_audio_tokenizer import load_higgs_audio_tokenizer
+from sentence_transformers import SentenceTransformer
 from huggingface_hub import hf_hub_download
-import torch
+import base64
+import openai, os, io
+import soundfile as sf
+from pydub import AudioSegment
+from tqdm import tqdm
 
+
+
+BOSON_API_KEY = os.getenv("BOSON_API_KEY")
 
 print("Loading tokenizer")
-tokenizer = load_higgs_audio_tokenizer("bosonai/higgs-audio-v2-tokenizer", device="mps")
+model = SentenceTransformer('sentence-transformers/all-mpnet-base-v2')
 
 print("Loading chromadb")
-client = chromadb.PersistentClient(path="HiggsAudioHackathon/vec_database/audio_db")
-collection = client.create_collection(name="audio_embeddings")
+client = chromadb.PersistentClient(path="vec_database/audio_db")
+collection = client.get_or_create_collection(name="text_embeddings")
+
+bosonclient = openai.Client(
+    api_key=BOSON_API_KEY,
+    base_url="https://hackathon.boson.ai/v1"
+)
 
 print("Loading data")
 repo_id = "ofarrelle/higgs-hackathon-2025"
@@ -26,35 +38,70 @@ for name in filenames:
         repo_type="dataset"  # change to "model" if the repo is a model repo
     )
     filepaths.append(file_path)
+audios = []
+# for i in filepaths:
+#     audios.append(AudioSegment.from_wav(i))
 
-def chunk_waveform(wv, sr, chunk_seconds=10):
-    chunk_size = int(chunk_seconds * sr)
-    return [wv[i:i+chunk_size] for i in range(0, len(wv), chunk_size)]
+audios.append(AudioSegment.from_wav(filepaths[0]))
+chunk_size = 10000
+file_format = "wav"
+
+audio_base64 = []
+
+def segment_to_base64(seg, fmt):
+    # normalize + mono + resample for better ASR stability
+    buf = io.BytesIO()
+    seg.export(buf, format=fmt)
+    return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+for audio in audios:
+    for ms in range(0, len(audio), chunk_size):
+        audio_base64.append(segment_to_base64(audio[ms:ms+chunk_size], file_format))
+
+def recognize_audio(chunk):
+   
+    system_prompt = (
+        "You are an AI assistant for audio understanding.\n"
+        "Process the entire audio file, even if there are silent sections.\n"
+        "Provide accurate transcription and any relevant context."
+    )
+    
+    response = bosonclient.chat.completions.create(
+        model="higgs-audio-understanding-Hackathon",  # Use understanding model
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "input_audio",
+                        "input_audio": {
+                            "data": chunk,
+                            "format": "wav"
+                        }
+                    },
+                ]
+            }
+        ],
+        max_completion_tokens=4096,
+        temperature=0,
+    )
+    
+    # Extract transcription
+    transcription = response.choices[0].message.content
+    
+    return transcription
 
 print("Tokenizing (embedding) and adding to vdb...")
-for idx, filepath in enumerate(filepaths):
-    # Ensure waveform and sr match tokenizer expectation
-    print("Loading file and chunks")
-    wv, sr = librosa.load(filepath, sr=tokenizer.sampling_rate, mono=True)
-    chunks = chunk_waveform(wv, sr, chunk_seconds=10)
 
-    for i, chunk in enumerate(chunks):
-        if len(chunk) < sr:  # optional: skip very short trailing audio
-            continue
-        codes = tokenizer.encode(chunk, sr)
-        if hasattr(codes, "audio_codes"):
-            code_tensor = codes.audio_codes
-        else:
-            code_tensor = codes
+for i, chunk in enumerate(tqdm(audio_base64)):
+    # Convert to text
+    text_info = recognize_audio(chunk)
+    embedding = model.encode(text_info)
 
-        # Suppose code_tensor shape is (n_codebooks, n_frames)
-        # Mean pool over frames (axis=1) to get fixed length [n_codebooks]
-        embedding = code_tensor.to(torch.float32).mean(axis=1)
-        embedding = embedding.cpu().numpy().astype(float)
-
-        print(f"Chunk size: {embedding.size}")
-        collection.add(
-            ids=[f"audio_{idx}_{i}"],
-            embeddings=[embedding.tolist()],
-            metadatas=[{"filename": filepath, "segment": i}]
-        )
+    collection.add(
+        ids=[f"audio_{i}"],
+        embeddings=[embedding],
+        documents=[text_info],
+        metadatas=[{"segment": i}]
+    )
