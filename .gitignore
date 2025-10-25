@@ -209,6 +209,9 @@ __marimo__/
 
 
 data/
+chroma_data/
 draft/
 app/static/notes/
-app/static/wordcloud/wordcloud.png
+app/static/wordcloud/*
+# All png files in the wordcloud directory
+app/static/wordcloud/*.png

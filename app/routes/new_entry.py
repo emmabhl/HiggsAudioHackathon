@@ -47,18 +47,17 @@ def query_collection(query, collection_name="journal_notes", top_k=5):
 
 
 def add_to_vectordb(note_id, summary, collection_name="journal_notes", tags=None):
-    # get or create the collection. If you want to use your own embeddings, pass embedding_function=None
-    collection = client.get_or_create_collection(
-        name=collection_name,
-        # embedding_function=None # because you compute embeddings externally
-    )
+    collection = client.get_or_create_collection(name=collection_name)
 
     embedding = encoder.encode([summary])[0].tolist()
+
+    # ensure string ID
+    note_id = str(note_id)
 
     collection.add(
         ids=[note_id],
         embeddings=[embedding],
-        metadatas=[{"tags": tags}] if tags is not None else [{}],
+        metadatas=[{"tags": tags, "source": "upload_file"}] if tags is not None else [{"source": "upload_file"}],
         documents=[summary]
     )
 
