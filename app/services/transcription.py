@@ -1,5 +1,5 @@
 #from shh import update_recording
-from transcribe import transcribe
+from backup_shh import transcribe
 
 
 def process_audio(audio_data):

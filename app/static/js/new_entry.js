@@ -5,6 +5,7 @@ let timerInterval;
 let seconds = 0;
 let audioChunks = [];
 let liveTranscript = '';
+let uploadedFile = null;
 
 const recordButton = document.getElementById('record-btn');
 const pauseButton = document.getElementById('pause-btn');
@@ -173,3 +174,65 @@ function updateLiveTranscription(text) {
     // Auto-scroll the transcription box to the bottom
     liveTranscription.scrollTop = liveTranscription.scrollHeight;
 }
+
+// Gestion du téléchargement de fichiers
+document.getElementById('audio-file').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (file) {
+        // Mettre à jour le label avec le nom du fichier
+        document.querySelector('.custom-file-label').textContent = file.name;
+        
+        // Activer le bouton d'upload
+        document.getElementById('upload-btn').disabled = false;
+        
+        // Stocker le fichier
+        uploadedFile = file;
+    }
+});
+
+document.getElementById('upload-form').addEventListener('submit', async (event) => {
+    event.preventDefault();
+    
+    if (!uploadedFile) {
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('audio', uploadedFile);
+    
+    const uploadStatus = document.getElementById('upload-status');
+    uploadStatus.innerHTML = '<div class="alert alert-info">Uploading and processing file...</div>';
+    
+    try {
+        const response = await fetch('/new_entry/upload_file', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error('Upload failed');
+        }
+
+        const data = await response.json();
+        if (data.note_id) {
+            window.location.href = `/view_entry/${data.note_id}`;
+        } else {
+            uploadStatus.innerHTML = '<div class="alert alert-success">File uploaded successfully!</div>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        uploadStatus.innerHTML = '<div class="alert alert-danger">Failed to upload file. Please try again.</div>';
+    }
+});
+
+// Réinitialiser le formulaire lors du changement d'onglet
+document.querySelector('a[data-toggle="tab"]').addEventListener('shown.bs.tab', (event) => {
+    if (event.target.id === 'upload-tab') {
+        resetRecording();
+    } else {
+        document.getElementById('upload-form').reset();
+        document.querySelector('.custom-file-label').textContent = 'Choose file';
+        document.getElementById('upload-btn').disabled = true;
+        document.getElementById('upload-status').innerHTML = '';
+    }
+});

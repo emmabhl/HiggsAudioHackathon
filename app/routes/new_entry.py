@@ -3,7 +3,7 @@ import json
 import os
 import subprocess
 import uuid
-from pymilvus import Collection, FieldSchema, DataType, CollectionSchema
+from qdrant_client import QdrantClient, models
 from flask import Blueprint, render_template, request, jsonify
 from sentence_transformers import SentenceTransformer
 from app.services import transcription as T
@@ -15,54 +15,60 @@ NOTES_DIR = 'app/static/notes'
 bp = Blueprint('new_entry', __name__, url_prefix='/new_entry')
 
 collection_name = "journal_notes"
-client = Collection("journal_notes")
+client = QdrantClient("http://localhost:6334")
 encoder = SentenceTransformer("BAAI/bge-base-en-v1.5")
 
 def query_collection(query, collection_name="journal_notes"):
     """
     Perform a semantic search on the saved notes based on the query.
     """
-    search_params = {"metric_type": "COSINE", "params": {"nprobe": 10}}
-    results = client.search(
-        data=[encoder.encode(query).tolist()],
-        anns_field="embedding",
-        param=search_params,
-        limit=5
-    )
+    hits = client.query_points(
+        collection_name=collection_name,
+        query=encoder.encode(query).tolist(),
+        limit=5,
+    ).points
 
-    matching_ids = [hit.id for hit in results[0]]
+    matching_ids = [hit.id for hit in hits]
     matching_notes = load_note_ids(matching_ids)
 
     return matching_notes
 
 
 def add_to_vectordb(note_id, summary, collection_name="journal_notes"):
-    if not Collection(collection_name).is_empty:
-        fields = [
-            FieldSchema(name="id", dtype=DataType.INT64, is_primary=True),
-            FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=encoder.get_sentence_embedding_dimension())
-        ]
-        schema = CollectionSchema(fields=fields, description="Journal notes for semantic search")
-        collection = Collection(name=collection_name, schema=schema)
+    if not client.collection_exists(collection_name):
+        client.create_collection(
+            collection_name=collection_name,
+            vectors_config=models.VectorParams(
+                size=encoder.get_sentence_embedding_dimension(),
+                distance=models.Distance.COSINE,
+            ),
+        )
 
     embedding = encoder.encode([summary])[0].tolist()
-    client.insert([
-        {"id": note_id, "embedding": embedding}
-    ])
+    client.upsert(
+        collection_name=collection_name,
+        points=[
+            models.PointStruct(
+                id=note_id,
+                vector=embedding,
+            )
+        ],
+    )
 
 def store_collection(data, collection_name="journal_notes"):
     """
     Store notes in the vector database.
     """
-    if Collection(collection_name).is_empty:
-        Collection(collection_name).drop()
+    if client.collection_exists(collection_name):
+        client.delete_collection(collection_name)
 
-    fields = [
-        FieldSchema(name="id", dtype=DataType.STRING, is_primary=True),
-        FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=encoder.get_sentence_embedding_dimension())
-    ]
-    schema = CollectionSchema(fields=fields, description="Journal notes for semantic search")
-    collection = Collection(name=collection_name, schema=schema)
+    client.create_collection(
+        collection_name=collection_name,
+        vectors_config=models.VectorParams(
+            size=encoder.get_sentence_embedding_dimension(),
+            distance=models.Distance.COSINE,
+        ),
+    )
 
     documents = []
     for item in data:
@@ -72,11 +78,22 @@ def store_collection(data, collection_name="journal_notes"):
         documents.append(
             {
                 "id": note_id,
-                "embedding": encoder.encode([formatted_text])[0].tolist()
+                "title": title,
+                "summary": formatted_text,
+                "tags": tags,
             }
         )
 
-    client.insert(documents)
+    client.upsert(
+        collection_name=collection_name,
+        points=[
+            models.PointStruct(
+                id=doc["id"],
+                vector=encoder.encode([doc["summary"]])[0].tolist()
+            )
+            for doc in documents
+        ],
+    )
 
 
 
@@ -90,6 +107,61 @@ def stream_audio():
     audio_data = request.files['audio']
     transcript_chunk = "" #transcription.process_audio(audio_data)
     return jsonify({'transcription': transcript_chunk})
+
+@bp.route('/upload_file', methods=['POST'])
+def upload_file():
+    if 'audio' not in request.files:
+        return jsonify({'error': 'No audio file provided'}), 400
+
+    audio_file = request.files['audio']
+    if not audio_file.filename:
+        return jsonify({'error': 'No file selected'}), 400
+
+    # Générer un ID unique pour la note
+    current_time = datetime.datetime.now()
+    note_id = int(current_time.timestamp())
+    
+    # Créer le dossier pour sauvegarder la note
+    save_path = os.path.join(NOTES_DIR, str(note_id))
+    os.makedirs(save_path, exist_ok=True)
+
+    # Sauvegarder le fichier audio original
+    original_path = os.path.join(save_path, os.path.basename(audio_file.filename))
+    audio_file.save(original_path)
+    # Renamer le fichier uploadé en audio.wav
+    os.rename(original_path, os.path.join(save_path, 'audio.wav'))
+
+    # Convertir en WAV si nécessaire
+    wav_path = os.path.join(save_path, 'audio.wav')
+    subprocess.call(f'ffmpeg -y -i "{wav_path}" "{wav_path}"', shell=True)
+
+    # Transcrire l'audio
+    transcription = T.process_audio(wav_path)
+    
+    # Extraire le titre, le résumé et les tags
+    title, summary, tags = get_title_summary_tags_from_transcription(transcription)
+    
+    # Créer les métadonnées
+    datetime_str = current_time.strftime('%Y-%m-%d %H:%M:%S')
+    json_dict = {
+        'id': str(note_id),
+        'title': title,
+        'summary': summary,
+        'tags': tags,
+        'transcription': transcription,
+        'datetime': datetime_str,
+        'original_filename': audio_file.filename
+    }
+
+    # Sauvegarder les métadonnées
+    json_path = os.path.join(save_path, 'data.json')
+    with open(json_path, 'w') as json_file:
+        json.dump(json_dict, json_file, indent=4)
+
+    # Ajouter à la base de données vectorielle
+    add_to_vectordb(note_id, summary)
+
+    return jsonify({'message': 'File uploaded and processed successfully', 'note_id': str(note_id)}), 200
 
 @bp.route('/save_entry', methods=['POST'])
 def save_entry():

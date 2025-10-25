@@ -13,6 +13,6 @@ def create_app():
     app.register_blueprint(home.bp)
 
     # Configure secret key for session management
-    app.config['SECRET_KEY'] = 'ass'
+    app.config['SECRET_KEY'] = 'blob'
 
     return app

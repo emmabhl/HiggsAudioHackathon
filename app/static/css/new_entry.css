@@ -37,6 +37,54 @@ body {
     text-align: center;
 }
 
+.upload-section {
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+}
+
+.custom-file {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.custom-file-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+#upload-btn {
+    min-width: 200px;
+}
+
+.nav-tabs {
+    border-bottom: none;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+.nav-tabs .nav-link {
+    color: white;
+    border: 2px solid transparent;
+    border-radius: 20px;
+    padding: 8px 20px;
+    margin: 0 10px;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: rgba(255, 255, 255, 0.5);
+    color: white;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: white;
+    color: #007bff;
+    border-color: white;
+    border-radius: 20px;
+}
+
 .recording-buttons button {
     font-size: 20px;
     padding: 15px;

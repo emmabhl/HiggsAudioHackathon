@@ -210,3 +210,5 @@ __marimo__/
 
 data/
 draft/
+app/static/notes/
+app/static/wordcloud/wordcloud.png
