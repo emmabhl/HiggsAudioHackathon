@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Note Gallery - Chronica</title>
+    <title>Lecture gallery</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/note_gallery.css') }}">
 </head>
 <body>
     <!-- Bootstrap Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="/">Chronica</a>
+        <a class="navbar-brand" href="/">Title</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -20,10 +20,10 @@
                     <a class="nav-link" href="/">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/note_gallery">Note Gallery</a>
+                    <a class="nav-link" href="/note_gallery">Lecture Gallery</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="/new_entry">Add Note</a>
+                    <a class="nav-link" href="/new_entry">Add Lecture</a>
                 </li>
             </ul>
         </div>
@@ -32,8 +32,8 @@
     <div class="container mt-4">
         <!-- Section Title -->
         <div class="section-title">
-            <h1>Note Gallery</h1>
-            <p>Explore your saved notes by time periods and find what you need easily.</p>
+            <h1>Lecture Gallery</h1>
+            <p>Explore your saved lectures by time periods and find what you need easily.</p>
         </div>
 
         <!-- Filter and Search Section -->

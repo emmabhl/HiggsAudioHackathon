@@ -3,17 +3,17 @@ import numpy as np
 import re
 from app.services.promptLibrary import promptDict
 import uuid
-from pymilvus import Collection
+from qdrant_client import QdrantClient, models
 import logging
 import os
 from sentence_transformers import SentenceTransformer
 
-# Initialize Milvus client and SentenceTransformer
+# Initialize Qdrant client and SentenceTransformer
 collection_name = "journal_notes"
-client = Collection("journal_notes")
+client = QdrantClient("http://localhost:6334")
 encoder = SentenceTransformer("BAAI/bge-base-en-v1.5")
 
-all_tags = ['Work', 'Reflection', 'Food', 'Travel', 'Sport']
+all_tags = ['Maths', 'Science', 'History', 'Art', 'Literature']
 
 def get_title_summary_tags_from_transcription(text):
     """
