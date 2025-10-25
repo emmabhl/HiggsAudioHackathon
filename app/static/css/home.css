@@ -1,33 +1,113 @@
 body {
-    background-color: #f0f4f8;
+    margin: 0;
+    min-height: 100vh;
     font-family: 'Arial', sans-serif;
+    color: #c8ffc8;
 }
 
 .container {
     margin-top: 60px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Global color overrides */
+a, p, h1, h2, h3, h4, h5, h6, .card-title, .card-text {
+    color: #c8ffc8 !important;
+}
+
+.btn {
+    border-color: #c8ffc8 !important;
+    color: #c8ffc8 !important;
+}
+
+.badge {
+    background-color: transparent !important;
+    border: 1px solid #c8ffc8 !important;
+    color: #c8ffc8 !important;
 }
 
 .card {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid #c8ffc8;
+    color: #c8ffc8;
 }
 
-.card:hover {
+.clickable-card {
+    text-decoration: none !important;
+    display: block;
+    height: 100%;
+    cursor: pointer;
+}
+
+.clickable-card:hover .card {
     transform: translateY(-10px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 20px rgba(200, 255, 200, 0.2);
+    background-color: rgba(200, 255, 200, 0.1);
+}
+
+.feature-card {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.feature-card .card-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.feature-card .card-text {
+    margin-bottom: 0;
+}
+
+.feature-card .card-body-icon {
+    margin-bottom: 1rem;
+}
+
+.feature-card .card-title {
+    margin-bottom: 1rem;
 }
 
 .card-body-icon {
     font-size: 40px;
     margin-bottom: 15px;
+    color: #c8ffc8;
 }
 
-.welcome-section {
-    background-color: #007bff;
-    color: white;
-    padding: 30px;
-    border-radius: 8px;
-    margin-bottom: 40px;
+.logo-header {
+    font-size: 3rem;
+    font-weight: bold;
+    font-family: sans-serif;
+    display: inline-flex;
+    align-items: baseline;
+    color: #c8ffc8;
+    margin: 0 auto;
+    width: 100%;
+    justify-content: center;
+}
+
+.logo-q-wrapper {
+    display: inline-block;
+    position: relative;
+    top: 0.1em;
+    margin-right: -0.00em;
+}
+
+.logo-q {
+    height: 1.1em;
+    display: block;
+}
+
+.welcome-description {
     text-align: center;
+    font-size: 1.2rem;
+    margin-bottom: 3rem;
+    color: #c8ffc8;
 }
 
 .statistics-placeholder {

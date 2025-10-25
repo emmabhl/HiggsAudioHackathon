@@ -1,10 +1,29 @@
 body {
-    background-color: #f0f4f8;
+    margin: 0;
+    min-height: 100vh;
     font-family: 'Arial', sans-serif;
+    color: #c8ffc8;
 }
 
 .container {
     margin-top: 50px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Global color overrides */
+a, p, h1, h2, h3, h4, h5, h6, .card-title, .card-text {
+    color: #c8ffc8 !important;
+}
+
+.btn {
+    border-color: #c8ffc8 !important;
+    color: #c8ffc8 !important;
+    background-color: transparent !important;
+}
+
+.btn:hover {
+    background-color: rgba(200, 255, 200, 0.1) !important;
 }
 
 .back-button {
@@ -12,12 +31,34 @@ body {
     cursor: pointer;
     text-decoration: none;
     font-weight: bold;
-    color: #007bff;
+    color: #c8ffc8;
     transition: color 0.2s ease, transform 0.2s ease;
 }
 
+/* Navbar transparency for view page */
+.navbar {
+    background-color: transparent !important;
+    border-bottom: 1px solid rgba(200,255,200,0.08);
+}
+.navbar .nav-link { color: #c8ffc8 !important; }
+
+/* Style the navbar brand logo */
+.nav-logo {
+    height: 1.6rem;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Make the hamburger icon match the theme color */
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'><path stroke='%23c8ffc8' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/></svg>");
+}
+.navbar-toggler {
+    border-color: rgba(200,255,200,0.12);
+}
+
 .back-button:hover {
-    color: #0056b3;
+    color: #ffffff;
     transform: translateX(-5px);
     text-decoration: underline;
 }
@@ -25,32 +66,35 @@ body {
 .entry-title {
     font-size: 2.5rem;
     font-weight: bold;
-    color: #343a40;
+    color: #c8ffc8;
 }
 
 .card {
     margin-bottom: 20px;
     transition: transform 0.2s ease, box-shadow 0.3s ease;
-    border: none;
+    border: 1px solid #c8ffc8;
     border-radius: 15px;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
 }
 
 .card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 15px rgba(200, 255, 200, 0.2);
 }
 
 .card-header {
-    background: linear-gradient(to right, #007bff, #00aaff);
-    color: #ffffff;
+    background: rgba(200, 255, 200, 0.1);
+    color: #c8ffc8;
     font-size: 1.3rem;
     font-weight: bold;
     border-radius: 15px 15px 0 0;
     padding: 15px;
+    border-bottom: 1px solid #c8ffc8;
 }
 
 .card-body {
-    background-color: #ffffff;
+    background-color: transparent;
     border-radius: 0 0 15px 15px;
     padding: 20px;
 }
@@ -61,21 +105,20 @@ body {
     font-size: 0.9rem;
     border-radius: 12px;
     transition: transform 0.2s ease;
+    background-color: transparent !important;
+    border: 1px solid #c8ffc8;
+    color: #c8ffc8 !important;
 }
 
 .badge:hover {
     transform: translateY(-3px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 10px rgba(200, 255, 200, 0.2);
 }
 
-.badge-primary {
-    background-color: #ff7675;
-    color: #ffffff;
-}
-
-.badge-secondary {
-    background-color: #74b9ff;
-    color: #ffffff;
+.badge-primary, .badge-secondary {
+    background-color: transparent !important;
+    color: #c8ffc8 !important;
+    border: 1px solid #c8ffc8;
 }
 
 .audio-control {

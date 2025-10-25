@@ -8,60 +8,41 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
 <body>
     <div class="container">
-        <!-- Welcome Section -->
-        <div class="welcome-section">
-            <h1>Title</h1>
-            <p>Description</p>
-        </div>
+        <!-- Title Section -->
+        <h1 class="logo-header">
+            <span class="logo-q-wrapper">
+                <img src="{{ url_for('static', filename='img/quarknotes_logo_lime.svg') }}" alt="QuarkNotes Logo" class="logo-q" />
+            </span>
+            uarkNotes
+        </h1>
+        <p class="welcome-description">Your personal audio tutor</p>
 
         <!-- Main Features Section -->
-        <div class="row mb-5">
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="card-body-icon">➕</div>
-                        <h5 class="card-title">Add Note</h5>
-                        <p class="card-text">Create a new recording.</p>
-                        <a href="/new_entry" class="btn btn-primary">Create Note</a>
+        <div class="row mb-5 justify-content-center">
+            <div class="col-md-6 mb-4 d-flex">
+                <a href="/new_entry" class="clickable-card w-100">
+                    <div class="card shadow-sm feature-card">
+                        <div class="card-body text-center">
+                            <div class="card-body-icon">➕</div>
+                            <h5 class="card-title">Add Note</h5>
+                            <p class="card-text">Create a new recording.</p>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="card-body-icon">📁</div>
-                        <h5 class="card-title">Note Gallery</h5>
-                        <p class="card-text">Browse your saved notes, search and manage them easily.</p>
-                        <a href="/note_gallery" class="btn btn-secondary">View Notes</a>
+            <div class="col-md-6 mb-4 d-flex">
+                <a href="/note_gallery" class="clickable-card w-100">
+                    <div class="card shadow-sm feature-card">
+                        <div class="card-body text-center">
+                            <div class="card-body-icon">📁</div>
+                            <h5 class="card-title">Note Gallery</h5>
+                            <p class="card-text">Browse your saved notes, search and manage them easily.</p>
+                        </div>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="card-body-icon">📊</div>
-                        <h5 class="card-title">Statistics</h5>
-                        <p class="card-text">Get insights from your notes. View word clouds, trends, and statistics.</p>
-                        <a href="#" class="btn btn-info">Coming Soon</a>
-                    </div>
-                </div>
+                </a>
             </div>
         </div>
 
-        <!-- Statistics Placeholder Section -->
-        <div class="row mb-5">
-            <div class="col-md-12">
-                <h3>Statistics Overview</h3>
-                <div class="statistics-placeholder">
-<!--                    <p>Placeholder for statistics overview like word clouds, note summaries, and usage trends.</p><br>-->
-                        <!-- Wordcloud Section -->
-                    <!-- Wordcloud Section -->
-                    <div id="wordcloud-container">
-                        <img id="wordcloud-image" alt="Wordcloud loading..." />
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Recent Notes Section -->
         <div class="row mb-5">
@@ -96,6 +77,7 @@
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/background.js') }}"></script>
     <script src="{{ url_for('static', filename='js/home.js') }}"></script>
 </body>
 </html>
