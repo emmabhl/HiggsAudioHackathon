@@ -3,9 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>New Entry - Title</title>
+    <title>New Entry - QuarkNotes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/new_entry.css') }}">
+    <style>
+        .option-card {
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
+        .option-card:hover {
+            transform: translateY(-5px);
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .option-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        
+        .options-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 70vh;
+        }
+    </style>
 </head>
 <body>
     <!-- Bootstrap Navbar -->
@@ -29,74 +62,34 @@
     </nav>
 
     <div class="container">
-        <!-- Recording Section -->
-        <div class="recording-section">
-            <h1>New Entry</h1>
-            <!-- Tabs for switching between recording and upload -->
-            <ul class="nav nav-tabs mb-3" role="tablist">
-                <li class="nav-item">
-                    <a class="nav-link active" id="record-tab" data-toggle="tab" href="#record" role="tab">Record Audio</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" id="upload-tab" data-toggle="tab" href="#upload" role="tab">Upload Audio</a>
-                </li>
-            </ul>
-            
-            <div class="tab-content">
-                <!-- Recording Tab -->
-                <div class="tab-pane fade show active" id="record" role="tabpanel">
-                    <p>Record your lecture directly here.</p>
-                    <p id="timer">00:00</p>
-                    <div class="recording-buttons d-flex justify-content-center">
-                        <button id="record-btn" class="btn btn-light text-primary"><i class="fas fa-microphone"></i> Start Recording</button>
-                        <button id="pause-btn" class="btn btn-light text-warning" style="display: none;"><i class="fas fa-pause"></i> Pause</button>
-                        <button id="stop-btn" class="btn btn-light text-danger" style="display: none;"><i class="fas fa-stop"></i> Stop</button>
-                    </div>
+        <h1 class="text-center mt-4">Choose an Option</h1>
+        
+        <div class="options-container">
+            <div class="row justify-content-center w-100">
+                <div class="col-md-5">
+                    <a href="/new_entry/record" class="option-card card shadow-sm">
+                        <div class="option-icon">
+                            <i class="fas fa-microphone"></i>
+                        </div>
+                        <h3>Record Audio</h3>
+                        <p>Record your lecture directly using your microphone</p>
+                    </a>
                 </div>
-                
-                <!-- Upload Tab -->
-                <div class="tab-pane fade" id="upload" role="tabpanel">
-                    <div class="upload-section text-center">
-                        <p>Upload an audio file from your device.</p>
-                        <form id="upload-form" class="mt-3">
-                            <div class="custom-file">
-                                <input type="file" class="custom-file-input" id="audio-file" accept="audio/*">
-                                <label class="custom-file-label" for="audio-file">Choose file</label>
-                            </div>
-                            <button type="submit" class="btn btn-primary mt-3" id="upload-btn" disabled>Upload</button>
-                        </form>
-                        <div id="upload-status" class="mt-3"></div>
-                    </div>
+                <div class="col-md-5">
+                    <a href="/new_entry/upload" class="option-card card shadow-sm">
+                        <div class="option-icon">
+                            <i class="fas fa-upload"></i>
+                        </div>
+                        <h3>Upload Audio</h3>
+                        <p>Upload an existing audio file from your device</p>
+                    </a>
                 </div>
             </div>
-        </div>
-
-        <!-- Playback Section -->
-        <div class="playback-section">
-            <h4>Playback Recording</h4>
-            <div class="text-center">
-                <button id="re-record-btn" class="btn btn-secondary" style="display: none;">🔄 Re-record</button>
-                <button id="playback-btn" class="btn btn-success" style="display: none;">▶️ Play Recording</button>
-                <audio id="audio-playback" controls style="display: none; margin-top: 20px; width: 100%;"></audio>
-            </div>
-        </div>
-
-<!--        &lt;!&ndash; Live Transcription Section &ndash;&gt;-->
-<!--        <div class="transcription-section">-->
-<!--            <h4>Live Transcription</h4>-->
-<!--            <div id="live-transcription" class="p-3">Live transcription will appear here...</div>-->
-<!--        </div>-->
-
-        <!-- Save Button -->
-        <div class="text-center">
-            <button id="save-btn" class="btn btn-info btn-save" style="display: none;">💾 Save Entry</button>
         </div>
     </div>
 
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script> <!-- Font Awesome Icons -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/background.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/new_entry.js') }}"></script>
 </body>
 </html>

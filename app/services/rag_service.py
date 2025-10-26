@@ -2,6 +2,47 @@ import markdown
 import ollama
 from app.services.text_gen_service import call_qwen_endpoint
 from app.services.notes_service import load_all_notes
+from app.services.promptLibrary import promptDict
+
+
+def infer_mode(query: str) -> str:
+    """Infer which prompt mode to use based on the student's query."""
+    q = query.lower()
+
+    if any(k in q for k in ["teach", "quiz", "question me", "test my knowledge", "teacher mode"]):
+        return "teacherMode"
+    elif any(k in q for k in ["exam", "mock exam", "practice test", "challenge me"]):
+        return "examMode"
+    elif any(k in q for k in ["evaluate", "grade", "score", "check my answer"]):
+        return "answerEvaluator"
+    elif any(k in q for k in ["explain", "clarify", "help me understand", "what is", "define"]):
+        return "conceptExplainer"
+    else:
+        return None
+
+
+def build_prompt(context: str, query: str) -> str:
+        """Construct the full generation prompt dynamically based on inferred mode."""
+        mode = infer_mode(query)
+        template = promptDict.get(mode, None)
+
+        prompt = f"""
+            You are an AI teaching assistant helping students learn efficiently from lecture materials.
+            Your answers must be accurate, concise, and directly useful for learning. Avoid unnecessary elaboration,
+            mathematical formulas, and stay brief.
+
+            # Context
+            {context.strip()}
+
+            # Instruction
+            {template.strip().format(text=context, query=query) if template else ""}
+
+            # Student Query
+            {query.strip()}
+
+            # Answer:
+            """
+        return prompt, mode
 
 
 def get_rag_summary(query, matching_notes, markdown=True):
@@ -18,14 +59,7 @@ def get_rag_summary(query, matching_notes, markdown=True):
 
     # Step 1: Prepare context from matching notes
     if len(matching_notes) == 0:
-        prompt = f"""
-        You are an assistant who provides answers to the user's questions. Make the response quick and concise please, just a short summary. Don't include special characters.
-
-        # Question
-        {query}
-
-        # Answer:
-        """
+        prompt = build_prompt("", query)[0]
     else:
         context = ""
         for note in matching_notes:
@@ -33,18 +67,7 @@ def get_rag_summary(query, matching_notes, markdown=True):
             context += f"Note ID: {note.get('id')}\nNote Date: {note.get('datetime')}\n{transcription}\n\n"
 
         # Step 2: Format the prompt using the template
-        prompt = f"""
-        You are an assistant who uses the provided context to answer the question accurately. 
-        Use the information from the notes to generate a detailed yet concise response.
-
-        # Context
-        {context}
-
-        # Question
-        {query}
-
-        # Answer:
-        """
+        prompt, mode = build_prompt(context, query)
 
     # Step 3: Call Ollama to get the answer
     try:

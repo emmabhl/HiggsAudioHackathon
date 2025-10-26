@@ -3,100 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Title - Home</title>
+    <title>QuarkNotes - Home</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/common.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/modern.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}">
-<body>
+<body class="dark-theme">
+    <div class="particle-bg" id="particles-js"></div>
     <div class="container">
-        <!-- Title Section -->
-        <h1 class="logo-header">
-            <span class="logo-q-wrapper">
-                <img src="{{ url_for('static', filename='img/quarknotes_logo_lime.svg') }}" alt="QuarkNotes Logo" class="logo-q" />
-            </span>
-            uarkNotes
-        </h1>
-        <p class="welcome-description">Your personal audio tutor</p>
-
-        <!-- Main Features Section -->
-        <!-- Ask a Question Card -->
-        <div class="row mb-4 justify-content-center">
-            <div class="col-md-9 d-flex">
-                <div class="clickable-card w-100">
-                    <div class="card shadow-sm feature-card" onclick="startRecording()">
-                        <div class="card-body text-center">
-                            <div id="ask-card-content">
-                                <div class="card-body-icon">🎙️</div>
-                                <h5 class="card-title">Ask a Question</h5>
-                                <p class="card-text">Get answers from your lectures using AI.</p>
-                            </div>
-                            <div id="recording-ui" style="display: none">
-                                <div class="recording-animation">
-                                    <div class="recording-pulse"></div>
-                                    <div class="card-body-icon">🎙️</div>
-                                </div>
-                                <p class="recording-text">Recording your question...</p>
-                                <button onclick="event.stopPropagation(); stopRecording()" class="stop-recording-btn">
-                                    <span class="stop-icon"></span>
-                                    Stop Recording
-                                </button>
-                            </div>
-                        </div>
+        <!-- Chatbot Section -->
+        <div class="chatbot-section">
+            <div class="chat-container">
+                <div class="chat-messages" id="chat-messages">
+                    <!-- Messages will be added here dynamically -->
+                </div>
+                <div class="chat-input-container">
+                    <div class="chat-actions">
+                        <a href="/new_entry/upload" class="btn btn-primary action-btn" title="Upload File">
+                            <i class="fas fa-file-upload"></i>
+                        </a>
+                        <a href="/new_entry/record" class="btn btn-primary action-btn" title="Record Audio">
+                            <i class="fas fa-microphone"></i>
+                        </a>
                     </div>
+                    <input type="text" id="chat-input" placeholder="Search notes or ask a question..." class="chat-input">
+                    <button id="voice-input" class="btn btn-primary" title="Voice Input">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button id="send-message" class="btn btn-primary">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Other Features -->
-        <div class="row mb-5 justify-content-center">
-            <div class="col-md-6 mb-4 d-flex">
-                <a href="/new_entry" class="clickable-card w-100">
-                    <div class="card shadow-sm feature-card">
-                        <div class="card-body text-center">
-                            <div class="card-body-icon">➕</div>
-                            <h5 class="card-title">Add Note</h5>
-                            <p class="card-text">Create a new recording.</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-            <div class="col-md-6 mb-4 d-flex">
-                <a href="/note_gallery" class="clickable-card w-100">
-                    <div class="card shadow-sm feature-card">
-                        <div class="card-body text-center">
-                            <div class="card-body-icon">📁</div>
-                            <h5 class="card-title">Note Gallery</h5>
-                            <p class="card-text">Browse your saved notes, search and manage them easily.</p>
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-
-
-        <!-- Recent Notes Section -->
-        <div class="row mb-5">
-            <div class="col-md-12">
-                <h3>Recent Notes</h3>
-                <div class="card-deck">
+        <!-- Main Content Section -->
+        <div class="content-section">
+            <div class="notes-list">
+                <h3>Notes Gallery</h3>
+                <div class="notes-container">
                     {% if recent_notes %}
                         {% for note in recent_notes %}
-                            <div class="card mb-4">
-                                <div class="card-body">
-                                    <h5 class="card-title">{{ note.title }}</h5>
-                                    <div>
-                                        <!-- Display Tags -->
-                                        {% for tag in note.tags %}
-                                            <span class="badge badge-primary">{{ tag }}</span>
-                                        {% endfor %}
-                                    </div>
-                                    <p class="card-text"><small class="text-muted">Last updated {{ note.datetime }}</small></p>
-                                    <a href="/view_entry/{{ note.id }}" class="btn btn-primary">View Note</a>
+                            <div class="note-item">
+                                <h5>{{ note.title }}</h5>
+                                <div class="note-tags">
+                                    {% for tag in note.tags %}
+                                        <span class="badge badge-primary">{{ tag }}</span>
+                                    {% endfor %}
                                 </div>
+                                <p class="note-date">{{ note.datetime }}</p>
+                                <a href="/view_entry/{{ note.id }}" class="btn btn-sm btn-outline-primary">View</a>
                             </div>
                         {% endfor %}
                     {% else %}
-                        <p>No recent notes available.</p>
+                        <p>No notes available.</p>
                     {% endif %}
+                </div>
+            </div>
+
+            <!-- Flowchart Section -->
+            <div class="flowchart-section">
+                <h3>Knowledge Map</h3>
+                <div id="flowchart-container">
+                    <!-- Flowchart will be rendered here -->
                 </div>
             </div>
         </div>
@@ -106,8 +77,47 @@
 
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/background.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="{{ url_for('static', filename='js/particles-config.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/tag-colors.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/flowchart.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
     <script src="{{ url_for('static', filename='js/home.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/question_recording.js') }}"></script>
+
+    <script>
+        // Add smooth scroll reveal animation
+        document.addEventListener('DOMContentLoaded', function() {
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.card, .welcome-section').forEach((el) => {
+                el.style.opacity = '0';
+                el.style.transform = 'translateY(20px)';
+                el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
+                observer.observe(el);
+            });
+
+            // Add visible class after a short delay to ensure elements are visible
+            setTimeout(() => {
+                document.querySelectorAll('.card, .welcome-section').forEach((el) => {
+                    el.classList.add('visible');
+                    el.style.opacity = '1';
+                    el.style.transform = 'translateY(0)';
+                });
+            }, 100);
+        });
+    </script>
 </body>
 </html>

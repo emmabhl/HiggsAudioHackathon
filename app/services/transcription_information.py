@@ -4,7 +4,11 @@ import re
 from app.services.promptLibrary import promptDict
 from app.services.text_gen_service import call_qwen_endpoint
 
-all_tags = ['Maths', 'Science', 'History', 'Art', 'Literature']
+all_tags = ['Maths', 'Science', 'History', 'Art', 'Literature', 'Technology', 'Health', 'Programming',
+            'Biology', 'Physics', 'Geography', 'Music', 'Psychology', 'Philosophy', 'Education', 
+            'Environment', 'Politics', 'Economics', 'Culture', 'Religion', 'Finance', 'Business',
+            'Marketing', 'Innovation', 'Wellness', 'Fitness', 'Nature', 'Animals', 'Travel', 'Food',
+            'Movies', 'Theatre', 'Photography', 'Design', 'AI', 'Sports', 'Fashion', 'Language', 'Other']
 
 def get_title_summary_tags_from_transcription(text):
     """

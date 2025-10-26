@@ -1,5 +1,5 @@
 import openai, base64, os, io, wave, subprocess, re
-FFPEG = "C:/ffmpeg/bin/ffmpeg.exe" 
+#FFPEG = "C:/ffmpeg/bin/ffmpeg.exe" 
 
 api_key = os.getenv("BOSON_API_KEY")
 if not api_key:
@@ -50,7 +50,7 @@ def _to_wav_bytes(input_audio: bytes) -> bytes:
     """Convert arbitrary audio blob -> WAV (pcm_s16le, mono, 24 kHz) using ffmpeg."""
     proc = subprocess.run(
         [
-            FFPEG,
+            "ffmpeg",
             "-hide_banner", "-loglevel", "error",
             "-i", "pipe:0",
             "-ac", "1",
@@ -91,7 +91,7 @@ def audio_to_txt(audio_path):
                 ],
             },
         ],
-        max_completion_tokens=100000,
+        max_completion_tokens=8000,
         temperature=0.0,
         stop=["<|end_of_text|>"],
     )

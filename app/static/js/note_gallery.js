@@ -4,6 +4,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const notesContainer = document.getElementById('notes-container');
     const tagsContainer = document.getElementById('available-tags');
     const searchButton = document.getElementById('search-button');
+    
+    // Récupérer le tag sélectionné depuis l'URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedTag = urlParams.get('tag');
 
     Date.prototype.getWeek = function () {
         var onejan = new Date(this.getFullYear(), 0, 1);
@@ -16,35 +20,18 @@ document.addEventListener('DOMContentLoaded', function () {
     const notesData = document.getElementById('notes-data').textContent;
     const notes = JSON.parse(notesData);
 
-    // Get all available tags from the script tag
-    const tagsData = document.getElementById('tags-data').textContent;
-    const tags = JSON.parse(tagsData);
+    // Extraire les tags uniques des notes existantes
+    const usedTags = new Set();
+    notes.forEach(note => {
+        note.tags.forEach(tag => usedTags.add(tag));
+    });
+    const tags = Array.from(usedTags).sort();
 
     const tagColors = {};
 
-    // Function to generate a deterministic pastel color for tags
-    function getDeterministicPastelColor(tag) {
-        // Create a hash value based on the tag string
-        let hash = 0;
-        for (let i = 0; i < tag.length; i++) {
-            hash = tag.charCodeAt(i) + ((hash << 5) - hash);
-        }
-
-        // Convert the hash value into a pastel color code
-        let color = '#';
-        for (let i = 0; i < 3; i++) {
-            const value = (hash >> (i * 8)) & 0xFF; // Extract byte by byte
-            // Convert to a pastel color by averaging it with a high value (e.g., 200-255)
-            const pastelValue = Math.floor((value % 128) + 127); // Ensure value is in the lighter range
-            color += ('0' + pastelValue.toString(16)).slice(-2);
-        }
-
-        return color;
-    }
-
-    // Assign random colors to each unique tag
+    // Utiliser la fonction getTagColor du fichier tag-colors.js
     tags.forEach(tag => {
-        tagColors[tag] = getDeterministicPastelColor(tag);
+        tagColors[tag] = getTagColor(tag);
     });
 
     // Render available tags
@@ -60,6 +47,24 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             tagsContainer.appendChild(tagBadge);
         });
+    }
+
+    // Fonction pour réinitialiser le filtrage
+    function resetFilter() {
+        const groupedNotes = groupNotesByFilter(notes, currentFilter);
+        renderNotes(groupedNotes);
+        
+        // Réinitialiser les styles des tags
+        const tagElements = document.querySelectorAll('.tag-badge');
+        tagElements.forEach(element => {
+            element.classList.remove('selected');
+            element.style.backgroundColor = tagColors[element.textContent];
+            element.style.color = 'var(--text-primary)';
+        });
+        
+        // Nettoyer l'URL
+        const newUrl = window.location.pathname;
+        window.history.pushState({}, '', newUrl);
     }
 
     // Function to group notes by different time periods
@@ -199,16 +204,61 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function filterNotesByTag(tag) {
+        // Si on clique sur le tag déjà sélectionné, on réinitialise le filtre
+        if (tag === selectedTag) {
+            resetFilter();
+            return;
+        }
+        
         const filteredNotes = notes.filter(note => note.tags.includes(tag));
         const groupedNotes = groupNotesByFilter(filteredNotes, currentFilter);
         renderNotes(groupedNotes);
+        
+        // Mettre à jour l'URL avec le tag sélectionné
+        const newUrl = `${window.location.pathname}?tag=${encodeURIComponent(tag)}`;
+        window.history.pushState({}, '', newUrl);
+        
+        // Mettre à jour les styles des tags
+        const tagElements = document.querySelectorAll('.tag-badge');
+        tagElements.forEach(element => {
+            if (element.textContent === tag) {
+                element.classList.add('selected');
+                element.style.backgroundColor = 'var(--primary-color)';
+                element.style.color = 'white';
+            } else {
+                element.classList.remove('selected');
+                element.style.backgroundColor = tagColors[element.textContent];
+                element.style.color = 'var(--text-primary)';
+            }
+        });
     }
 
     // Initial render
     let currentFilter = 'month';
-    const groupedNotes = groupNotesByFilter(notes, currentFilter);
-    renderNotes(groupedNotes);
-    renderAvailableTags();
+    
+    function highlightSelectedTag(tag) {
+        const tagElements = document.querySelectorAll('.tag-badge');
+        tagElements.forEach(element => {
+            if (element.textContent === tag) {
+                element.classList.add('selected');
+                element.style.backgroundColor = 'var(--primary-color)';
+                element.style.color = 'white';
+            }
+        });
+    }
+    
+    // Initial render with selected tag if present
+    if (selectedTag) {
+        const filteredNotes = notes.filter(note => note.tags.includes(selectedTag));
+        const groupedNotes = groupNotesByFilter(filteredNotes, currentFilter);
+        renderNotes(groupedNotes);
+        renderAvailableTags();
+        highlightSelectedTag(selectedTag);
+    } else {
+        const groupedNotes = groupNotesByFilter(notes, currentFilter);
+        renderNotes(groupedNotes);
+        renderAvailableTags();
+    }
 
     // Trigger search with semantic approach
     async function triggerSearch() {

@@ -9,10 +9,21 @@ bp = Blueprint('note_gallery', __name__, url_prefix='/note_gallery')
 
 @bp.route('/')
 def note_gallery():
+    # Get the tag filter from the query parameters
+    selected_tag = request.args.get('tag')
+    
     # Load notes from the service
     notes = load_notes()
+    
+    # Filter notes by tag if a tag is selected
+    if selected_tag:
+        notes = [note for note in notes if selected_tag in note.get('tags', [])]
+    
     all_available_tags = get_all_available_tags()
-    return render_template('note_gallery.html', notes=notes, all_available_tags=all_available_tags)
+    return render_template('note_gallery.html', 
+                         notes=notes, 
+                         all_available_tags=all_available_tags,
+                         selected_tag=selected_tag)
 
 @bp.route('/semantic_search', methods=['POST'])
 def semantic_search():
