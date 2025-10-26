@@ -2,10 +2,30 @@ let mediaRecorder = null;
 let audioChunks = [];
 
 function startRecording() {
-    // Hide the card content and show the recording UI
-    document.getElementById('ask-card-content').style.display = 'none';
-    document.getElementById('recording-ui').style.display = 'flex';
-    
+    // Don't start a new recording if one is already in progress
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        console.log('Recording already in progress, ignoring start request');
+        return;
+    }
+
+    console.log('Starting recording...');
+    const askCardContent = document.getElementById('ask-card-content');
+    const recordingUI = document.getElementById('recording-ui');
+
+    if (askCardContent) {
+        askCardContent.style.display = 'none';
+        console.log('Hidden ask-card-content');
+    } else {
+        console.error('ask-card-content element not found');
+    }
+
+    if (recordingUI) {
+        recordingUI.style.display = 'flex';
+        console.log('Showed recording-ui');
+    } else {
+        console.error('recording-ui element not found');
+    }
+
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             mediaRecorder = new MediaRecorder(stream);
@@ -83,6 +103,32 @@ function stopRecording() {
 }
 
 function resetQuestionCard() {
-    document.getElementById('ask-card-content').style.display = 'block';
-    document.getElementById('recording-ui').style.display = 'none';
+    console.log(`Resetting question card UI`);
+    const askCardContent = document.getElementById('ask-card-content');
+    const recordingUI = document.getElementById('recording-ui');
+    
+    console.log('Ask card content element:', askCardContent);
+    console.log('Recording UI element:', recordingUI);
+    
+    if (recordingUI) {
+        // Clear the recording UI content to ensure we remove the answer display and match initial state
+        recordingUI.innerHTML = `
+            <div class="recording-animation">
+                <div class="recording-pulse"></div>
+                <div class="card-body-icon">🎙️</div>
+            </div>
+            <p class="recording-text">Recording your question...</p>
+            <button onclick="event.stopPropagation(); stopRecording()" class="stop-recording-btn">
+                <span class="stop-icon"></span>
+                Stop Recording
+            </button>
+        `;
+        console.log('Reset recording-ui content with animation');
+    } else {
+        console.error('recording-ui element not found');
+    }
+
+    // Start the new recording immediately - this will handle the UI display states
+    console.log('Starting new recording session');
+    startRecording();
 }
