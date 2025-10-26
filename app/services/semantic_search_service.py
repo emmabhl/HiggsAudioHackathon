@@ -8,7 +8,7 @@ collection_name = "chroma_data"
 client = chromadb.PersistentClient(path=collection_name)
 encoder = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
-def semantic_search_notes(query, threshold=1, top_k=10):
+def semantic_search_notes(query, threshold=1.5, top_k=10):
     # Initialize vector database and encoder
 
     query_embedding = encoder.encode(query).tolist()
