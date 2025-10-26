@@ -25,7 +25,7 @@ def get_audio_response(text_to_say, samplerate=24000):
         modalities=["text", "audio"],
         audio={"format": "pcm16"},  # raw PCM16 chunks
         stream=True,
-        max_completion_tokens=10000,
+        max_completion_tokens=2000,
     )
 
     for chunk in stream:
