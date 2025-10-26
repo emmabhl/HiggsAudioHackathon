@@ -7,9 +7,11 @@ from app.services.rag_service import get_rag_summary
 from app.services.text_gen_service import get_audio_response, _to_wav_bytes
 
 bp = Blueprint('live_chat', __name__, url_prefix='/live_chat')
+last_question = ''
 
 @bp.route('/response', methods=['POST'])
 def response():
+    global last_question
     ctype = (request.headers.get('Content-Type') or '').lower()
     if not (ctype.startswith('audio/') or ctype == 'application/octet-stream'):
         abort(400, description="Send raw audio blob in the request body with Content-Type audio/* or application/octet-stream.")
@@ -26,8 +28,10 @@ def response():
 
     query = T.process_audio(wav_io)  # expects a WAV file-like
     matching_notes = semantic_search_notes(query)
-    summary = "" if not query.strip() else get_rag_summary(query, matching_notes, markdown=False)
+    summary = "" if not query.strip() else get_rag_summary(query, matching_notes, markdown=False, last_question=last_question)
     print(summary)
+
+    last_question = summary
 
     output_audio = get_audio_response(summary)  # should already be WAV bytes
     return Response(output_audio, mimetype='audio/wav')

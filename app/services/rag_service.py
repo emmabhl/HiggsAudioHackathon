@@ -1,10 +1,9 @@
 import markdown
-import ollama
 from app.services.text_gen_service import call_qwen_endpoint
 from app.services.notes_service import load_all_notes
 
 
-def get_rag_summary(query, matching_notes, markdown=True):
+def get_rag_summary(query, matching_notes, markdown=True, last_question=''):
     """
     Perform a retrieval-augmented generation for the query using the saved notes as context.
 
@@ -21,6 +20,9 @@ def get_rag_summary(query, matching_notes, markdown=True):
         prompt = f"""
         You are an assistant who provides answers to the user's questions. Make the response quick and concise please, just a short summary. Don't include special characters.
 
+        # Last Assistant Response
+        {last_question}
+
         # Question
         {query}
 
@@ -36,6 +38,9 @@ def get_rag_summary(query, matching_notes, markdown=True):
         prompt = f"""
         You are an assistant who uses the provided context to answer the question accurately. 
         Use the information from the notes to generate a detailed yet concise response.
+
+        # Last Assistant Response
+        {last_question}
 
         # Context
         {context}
