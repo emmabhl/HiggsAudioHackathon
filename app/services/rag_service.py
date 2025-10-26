@@ -4,7 +4,7 @@ import ollama
 from app.services.notes_service import load_all_notes
 
 
-def get_rag_summary(query, matching_notes):
+def get_rag_summary(query, matching_notes, markdown=True):
     """
     Perform a retrieval-augmented generation for the query using the saved notes as context.
 
@@ -15,25 +15,36 @@ def get_rag_summary(query, matching_notes):
     Returns:
         Tuple[str, list]: Tuple containing the generated summary and the list of relevant notes.
     """
+
     # Step 1: Prepare context from matching notes
-    context = ""
-    for note in matching_notes:
-        transcription = note.get('transcription', '')
-        context += f"Note ID: {note.get('id')}\nNote Date: {note.get('datetime')}\n{transcription}\n\n"
+    if len(matching_notes) == 0:
+        prompt = f"""
+        You are an assistant who provides answers to the user's questions.
 
-    # Step 2: Format the prompt using the template
-    prompt = f"""
-    You are an assistant who uses the provided context to answer the question accurately. 
-    Use the information from the notes to generate a detailed yet concise response.
+        # Question
+        {query}
 
-    # Context
-    {context}
+        # Answer:
+        """
+    else:
+        context = ""
+        for note in matching_notes:
+            transcription = note.get('transcription', '')
+            context += f"Note ID: {note.get('id')}\nNote Date: {note.get('datetime')}\n{transcription}\n\n"
 
-    # Question
-    {query}
+        # Step 2: Format the prompt using the template
+        prompt = f"""
+        You are an assistant who uses the provided context to answer the question accurately. 
+        Use the information from the notes to generate a detailed yet concise response.
 
-    # Answer:
-    """
+        # Context
+        {context}
+
+        # Question
+        {query}
+
+        # Answer:
+        """
 
     # Step 3: Call Ollama to get the answer
     try:
@@ -44,4 +55,7 @@ def get_rag_summary(query, matching_notes):
 
     # Step 4: Return the summary and relevant notes
     summary = summary.replace("\n", "\n\n").replace("\n\n\n\n", "\n\n")
-    return markdown.markdown(summary)
+
+    if markdown:
+        return markdown.markdown(summary)
+    return summary

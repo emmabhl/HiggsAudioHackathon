@@ -15,21 +15,16 @@ from app.services.notes_service import load_note_ids
 NOTES_DIR = 'app/static/notes'
 bp = Blueprint('new_entry', __name__, url_prefix='/new_entry')
 
-collection_name = "journal_notes"
-client = chromadb.PersistentClient(path="chroma_data")
+collection_name = "chroma_data"
+client = chromadb.PersistentClient(path=collection_name)
+collection = client.get_or_create_collection(name=collection_name)
 
+encoder = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
-encoder = SentenceTransformer("BAAI/bge-base-en-v1.5")
-
-def query_collection(query, collection_name="journal_notes", top_k=5):
+def query_collection(query, top_k=5):
     # embed query
-    query_embedding = encoder.encode(query).tolist()
 
-    # get or create the collection
-    collection = client.get_or_create_collection(
-        name=collection_name,
-        # we are using external embedder so we can pass embedding_function=None
-    )
+    query_embedding = encoder.encode(query).tolist()
 
     # perform query
     results = collection.query(
@@ -46,10 +41,8 @@ def query_collection(query, collection_name="journal_notes", top_k=5):
     return matching_notes
 
 
-def add_to_vectordb(note_id, summary, collection_name="journal_notes", tags=None):
-    collection = client.get_or_create_collection(name=collection_name)
-
-    embedding = encoder.encode([summary])[0].tolist()
+def add_to_vectordb(note_id, transcription, tags=None):
+    embedding = encoder.encode(transcription)
 
     # ensure string ID
     note_id = str(note_id)
@@ -58,8 +51,9 @@ def add_to_vectordb(note_id, summary, collection_name="journal_notes", tags=None
         ids=[note_id],
         embeddings=[embedding],
         metadatas=[{"tags": tags, "source": "upload_file"}] if tags is not None else [{"source": "upload_file"}],
-        documents=[summary]
+        documents=[transcription]
     )
+    print('Collection count:', collection.count())
 
 import uuid
 
