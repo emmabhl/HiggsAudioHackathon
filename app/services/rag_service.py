@@ -19,7 +19,7 @@ def get_rag_summary(query, matching_notes, markdown=True):
     # Step 1: Prepare context from matching notes
     if len(matching_notes) == 0:
         prompt = f"""
-        You are an assistant who provides answers to the user's questions.
+        You are an assistant who provides answers to the user's questions. Make the response quick and concise please, just a short summary.
 
         # Question
         {query}

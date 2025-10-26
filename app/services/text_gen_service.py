@@ -13,7 +13,7 @@ def get_audio_response(text_to_say, samplerate=24000):
     """
 
     messages = [
-        {"role": "system", "content": "Convert the following text from the user into speech."},
+        {"role": "system", "content": "Convert the following text from the user into speech. In english please"},
         {"role": "user", "content": text_to_say},
     ]
 
@@ -25,7 +25,7 @@ def get_audio_response(text_to_say, samplerate=24000):
         modalities=["text", "audio"],
         audio={"format": "pcm16"},  # raw PCM16 chunks
         stream=True,
-        max_completion_tokens=300,
+        max_completion_tokens=10000,
     )
 
     for chunk in stream:
@@ -72,7 +72,7 @@ def encode_audio_to_base64(file_path: str):
 
 def audio_to_txt(audio_path):
     audio = encode_audio_to_base64(audio_path)
-    
+
     response = client.chat.completions.create(
         model="higgs-audio-understanding-Hackathon",
         messages=[
@@ -90,9 +90,9 @@ def audio_to_txt(audio_path):
                 ],
             },
         ],
-        max_completion_tokens=4096,
+        max_completion_tokens=100000,
         temperature=0.0,
-        stop=["<|eot_id|>", "<|end_of_text|>"],
+        stop=["<|end_of_text|>"],
     )
     
     return response.choices[0].message.content
