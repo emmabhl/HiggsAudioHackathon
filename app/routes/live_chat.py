@@ -27,8 +27,6 @@ def response():
     query = T.process_audio(wav_io)  # expects a WAV file-like
     matching_notes = semantic_search_notes(query)
     summary = "" if not query.strip() else get_rag_summary(query, matching_notes, markdown=False)
-    if summary == '':
-        print('shit broken')
     print(summary)
 
     output_audio = get_audio_response(summary)  # should already be WAV bytes

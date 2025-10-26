@@ -4,6 +4,7 @@ import os
 import subprocess
 import uuid
 import chromadb
+import pathlib
 from chromadb.utils import embedding_functions
 from flask import Blueprint, render_template, request, jsonify
 from sentence_transformers import SentenceTransformer
@@ -12,9 +13,10 @@ from app.services.transcription_information import get_title_summary_tags_from_t
 from app.services.notes_service import load_note_ids
 
 
-NOTES_DIR = 'app/static/notes'
+NOTES_DIR = pathlib.Path('app') / 'static' / 'notes'
 bp = Blueprint('new_entry', __name__, url_prefix='/new_entry')
 
+# Preload model and client
 collection_name = "chroma_data"
 client = chromadb.PersistentClient(path=collection_name)
 collection = client.get_or_create_collection(name=collection_name)
@@ -23,7 +25,6 @@ encoder = SentenceTransformer("sentence-transformers/all-mpnet-base-v2")
 
 def query_collection(query, top_k=5):
     # embed query
-
     query_embedding = encoder.encode(query).tolist()
 
     # perform query
@@ -46,7 +47,7 @@ def add_to_vectordb(note_id, transcription, tags=None):
 
     # ensure string ID
     note_id = str(note_id)
-
+    
     collection.add(
         ids=[note_id],
         embeddings=[embedding],
@@ -54,10 +55,8 @@ def add_to_vectordb(note_id, transcription, tags=None):
         documents=[transcription]
     )
     print('Collection count:', collection.count())
-
-import uuid
-
-def store_collection(data, collection_name="journal_notes"):
+    
+def store_collection(data, collection_name="chroma_data"):
     # If existing collection and you want to start fresh, you can delete:
     try:
         client.delete_collection(name=collection_name)
@@ -94,6 +93,14 @@ def store_collection(data, collection_name="journal_notes"):
 def new_entry():
     return render_template('new_entry.html')
 
+@bp.route('/record', methods=['GET'])
+def record_audio():
+    return render_template('record_audio.html')
+
+@bp.route('/upload', methods=['GET'])
+def upload_audio():
+    return render_template('upload_audio.html')
+
 @bp.route('/stream_audio', methods=['POST'])
 def stream_audio():
     audio_data = request.files['audio']
@@ -108,6 +115,9 @@ def upload_file():
     audio_file = request.files['audio']
     if not audio_file.filename:
         return jsonify({'error': 'No file selected'}), 400
+    file_ext = os.path.splitext(audio_file.filename)[1].lower()
+    if file_ext not in ['.wav', '.mp3', '.m4a', '.webm', '.ogg', '.flac']:
+        return jsonify({'error': 'Unsupported file type'}), 400
 
     # Générer un ID unique pour la note
     current_time = datetime.datetime.now()
@@ -121,14 +131,14 @@ def upload_file():
     original_path = os.path.join(save_path, os.path.basename(audio_file.filename))
     audio_file.save(original_path)
     # Renamer le fichier uploadé en audio.wav
-    os.rename(original_path, os.path.join(save_path, 'audio.wav'))
+    os.rename(original_path, os.path.join(save_path, 'audio' + file_ext))
 
     # Convertir en WAV si nécessaire
-    wav_path = os.path.join(save_path, 'audio.wav')
-    subprocess.call(f'ffmpeg -y -i "{wav_path}" "{wav_path}"', shell=True)
+    #wav_path = os.path.join(save_path, 'audio.wav')
+    #subprocess.call(f'ffmpeg -y -i "{original_path}" "{wav_path}"', shell=True)
 
     # Transcrire l'audio
-    transcription = T.process_audio(wav_path)
+    transcription = T.process_audio(os.path.join(save_path, 'audio' + file_ext))
     
     # Extraire le titre, le résumé et les tags
     title, summary, tags = get_title_summary_tags_from_transcription(transcription)
@@ -140,7 +150,7 @@ def upload_file():
         'title': title,
         'summary': summary,
         'tags': tags,
-        'transcription': transcription,
+        'transcription': " ".join(transcription) if isinstance(transcription, list) else transcription,
         'datetime': datetime_str,
         'original_filename': audio_file.filename
     }
@@ -151,7 +161,7 @@ def upload_file():
         json.dump(json_dict, json_file, indent=4)
 
     # Ajouter à la base de données vectorielle
-    add_to_vectordb(note_id, summary)
+    add_to_vectordb(note_id, " ".join(transcription) if isinstance(transcription, list) else transcription)
 
     return jsonify({'message': 'File uploaded and processed successfully', 'note_id': str(note_id)}), 200
 
@@ -171,10 +181,10 @@ def save_entry():
     os.makedirs(save_path, exist_ok=True)
 
     # Save the audio data
-    audio_path = os.path.join(save_path, f'audio.webm')
+    audio_path = os.path.join(save_path, f'audio.wav')
     audio_data.save(audio_path)
 
-    subprocess.call(f'ffmpeg -y -i {save_path}/audio.webm {save_path}/audio.wav', shell=True)
+    #subprocess.call(f'ffmpeg -y -i {save_path}/audio.webm {save_path}/audio.wav', shell=True)
 
     transcription = T.process_audio(os.path.join(save_path, 'audio.wav'))
 
@@ -190,7 +200,7 @@ def save_entry():
         'title': title,
         'summary': summary,
         'tags': tags,
-        'transcription': transcription,
+        'transcription': " ".join(transcription) if isinstance(transcription, list) else transcription,
         'datetime': datetime_str
     }
 
@@ -199,7 +209,7 @@ def save_entry():
         json.dump(json_dict, json_file, indent=4)
 
     ## Add the note to the vector database
-    add_to_vectordb(note_id, summary)
+    add_to_vectordb(note_id, " ".join(transcription) if isinstance(transcription, list) else transcription)
 
     # # Save the audio data
     # audio_data.seek(0)

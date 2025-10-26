@@ -1,4 +1,4 @@
-import openai, base64, os, io, wave, subprocess
+import openai, base64, os, io, wave, subprocess, re
 FFPEG = "C:/ffmpeg/bin/ffmpeg.exe" 
 
 api_key = os.getenv("BOSON_API_KEY")
@@ -26,6 +26,7 @@ def get_audio_response(text_to_say, samplerate=24000):
         audio={"format": "pcm16"},  # raw PCM16 chunks
         stream=True,
         max_completion_tokens=2000,
+        stop=["<|end_of_text|>"],
     )
 
     for chunk in stream:
@@ -96,3 +97,20 @@ def audio_to_txt(audio_path):
     )
     
     return response.choices[0].message.content
+
+def call_qwen_endpoint(prompt):
+    response = client.chat.completions.create(
+        model="Qwen3-14B-Hackathon",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            },
+        ],
+        max_completion_tokens=2048,
+        temperature=0.0,
+    )
+    
+    output = response.choices[0].message.content
+
+    return re.sub(r"<think>.*?</think>", "", output, flags=re.DOTALL).strip()

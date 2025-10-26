@@ -1,10 +1,11 @@
 import json
 import os
 from datetime import datetime
+import pathlib
 
 import markdown
 
-NOTES_DIR = 'app/static/notes'
+NOTES_DIR = pathlib.Path('app') / 'static' / 'notes'
 
 def load_notes(note_ids=None):
     """

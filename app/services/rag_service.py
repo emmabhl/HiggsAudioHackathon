@@ -1,6 +1,6 @@
 import markdown
 import ollama
-
+from app.services.text_gen_service import call_qwen_endpoint
 from app.services.notes_service import load_all_notes
 
 
@@ -19,7 +19,7 @@ def get_rag_summary(query, matching_notes, markdown=True):
     # Step 1: Prepare context from matching notes
     if len(matching_notes) == 0:
         prompt = f"""
-        You are an assistant who provides answers to the user's questions. Make the response quick and concise please, just a short summary.
+        You are an assistant who provides answers to the user's questions. Make the response quick and concise please, just a short summary. Don't include special characters.
 
         # Question
         {query}
@@ -48,8 +48,9 @@ def get_rag_summary(query, matching_notes, markdown=True):
 
     # Step 3: Call Ollama to get the answer
     try:
-        response = ollama.generate(model="llama3.2:3b", prompt=prompt)  # Adjust model name if necessary
-        summary = response.get("response", "")
+        summary = call_qwen_endpoint(prompt)
+        #ollama.generate(model="llama3.2:3b", prompt=prompt)  # Adjust model name if necessary
+        #summary = response.get("response", "")
     except Exception as e:
         summary = f"An error occurred while generating the summary: {str(e)}"
 
