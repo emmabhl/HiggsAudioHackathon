@@ -1,5 +1,4 @@
 import markdown
-import ollama
 from app.services.text_gen_service import call_qwen_endpoint
 from app.services.notes_service import load_all_notes
 from app.services.promptLibrary import promptDict
