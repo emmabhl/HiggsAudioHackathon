@@ -9,7 +9,7 @@ This repository contains a web application designed to serve as an AI tutor. Use
 - **User-Friendly Interface**: Designed for ease of use, making it accessible for all users.
 
 ## Getting Started
-To set up the project, please ensure you have the necessary environment and dependencies. Detailed instructions for environment setup will be provided in the documentation.
+To set up the project, please ensure you have the necessary environment and dependencies. Detailed instructions for environment setup will be added.
 
 ## Contributing
 Contributions are welcome! Please feel free to submit issues or pull requests to improve the functionality and user experience of the application.
