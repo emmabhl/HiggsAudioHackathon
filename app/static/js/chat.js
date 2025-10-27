@@ -23,12 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Ajouter le contrôle audio si disponible
         if (audioUrl && !isUser) {
             const audio = new Audio(audioUrl);
-            
-            // S'assurer que l'audio est chargé avant de le jouer
-            audio.addEventListener('canplaythrough', () => {
-                audio.play().catch(e => console.error('Erreur de lecture auto:', e));
-            }, { once: true });
-            
             const audioControls = document.createElement('div');
             audioControls.classList.add('audio-controls');
             
@@ -39,6 +33,14 @@ document.addEventListener('DOMContentLoaded', function() {
             playButton.addEventListener('click', () => {
                 audio.play().catch(e => console.error('Erreur de lecture manuelle:', e));
             });
+
+            audio.play().catch(e => console.error('Erreur de lecture automatique:', e));
+            
+            // Déclencher automatiquement la lecture dès que l'audio est chargé
+            audio.addEventListener('canplaythrough', () => {
+                playButton.click();
+                audio.play().catch(e => console.error('Erreur de lecture automatique:', e));
+            }, { once: true });
             
             audioControls.appendChild(playButton);
             messageDiv.appendChild(audioControls);
@@ -110,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         if (transcriptionResponse.ok) {
                             const data = await transcriptionResponse.json();
-                            chatInput.value = data.transcription;
+                            //chatInput.value = data.transcription;
                             sendMessage(data.transcription);
                         } else {
                             throw new Error('Transcription failed');

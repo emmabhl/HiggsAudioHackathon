@@ -4,8 +4,11 @@ import io
 from pydub import AudioSegment
 import os
 import base64
+from dotenv import load_dotenv
 
-model = WhisperModel("small", compute_type="int8", device="cpu")
+load_dotenv()
+
+model = WhisperModel("small", compute_type="int8", device="auto")
 
 def transcribe(wav_path: str) -> str:
     print("Transcription")

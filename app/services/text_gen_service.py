@@ -1,5 +1,8 @@
 import openai, base64, os, io, wave, subprocess, re
 #FFPEG = "C:/ffmpeg/bin/ffmpeg.exe" 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 api_key = os.getenv("BOSON_API_KEY")
 if not api_key:

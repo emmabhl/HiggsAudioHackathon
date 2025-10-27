@@ -10,16 +10,20 @@ from app.services.rag_service import get_rag_summary
 from app.services.text_gen_service import get_audio_response, _to_wav_bytes
 
 bp = Blueprint('live_chat', __name__, url_prefix='/api')
+last_question = ""
 
 @bp.route('/chat', methods=['POST'])
 def chat():
+    global last_question
     message = request.json.get('message')
     if not message:
         return jsonify({'error': 'No message provided'}), 400
 
     # Utiliser le message pour chercher dans les notes
     matching_notes = semantic_search_notes(message)
-    response = get_rag_summary(message, matching_notes, markdown=False)
+    response = get_rag_summary(message, matching_notes, markdown=False, last_question=last_question)
+    last_question = message
+    print("RAG Response:", response)
     
     if not response:
         response = "I am sorry, I do not have enough information to answer that."
